@@ -1,7 +1,0 @@
-Package: aios
-Version: 0.1
-Section: utils
-Priority: optional
-Architecture: all
-Maintainer: site-u2023
-Description: Simple launcher for aios.sh
