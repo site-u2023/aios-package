@@ -9,5 +9,5 @@
 ## Install
 
 ```sh
-opkg install https://github.com/site-u2023/aios-package/releases/download/v1.0/aios_0.1_all.ipk
+opkg install https://github.com/site-u2023/aios-package/releases/latest/download/aios_0.1_all.ipk
 ```
