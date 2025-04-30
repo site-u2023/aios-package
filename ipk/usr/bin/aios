@@ -1,0 +1,42 @@
+#!/usr/bin/env lua
+
+local BASE_DIR = "/tmp/aios"
+local BASE_FILE = "aios.sh"
+local BASE_PATH = BASE_DIR .. "/" .. BASE_FILE
+local BASE_URL = "https://raw.githubusercontent.com/site-u2023/aios/main/" .. BASE_FILE
+
+local function file_exists(path)
+    local f = io.open(path, "r")
+    if f then f:close() return true end
+    return false
+end
+
+local function exec(cmd)
+    local ok, _, code = os.execute(cmd)
+    return ok, code
+end
+
+if not file_exists(BASE_DIR) then
+    local ok, code = exec("mkdir -p " .. BASE_DIR)
+    if not ok then
+        io.stderr:write("Error: Failed to create " .. BASE_DIR .. "\n")
+        os.exit(1)
+    end
+end
+
+local ok = false
+if os.execute("which wget > /dev/null 2>&1") == 0 then
+    ok = (os.execute("wget -q -O " .. BASE_PATH .. " " .. BASE_URL) == 0)
+end
+if not ok then
+    io.stderr:write("Error: Failed to download " .. BASE_FILE .. "\n")
+    os.exit(2)
+end
+os.execute("chmod +x " .. BASE_PATH)
+
+local args = ""
+for i = 1, #arg do
+    args = args .. " " .. string.gsub(arg[i], "'", "'\\''")
+end
+local code = os.execute(BASE_PATH .. args)
+os.exit(code == true and 0 or (type(code) == "number" and code or 1))

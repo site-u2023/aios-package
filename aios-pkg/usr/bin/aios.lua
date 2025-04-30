@@ -6,10 +6,10 @@ local BASE_FILE = "aios.sh"
 local BASE_PATH = BASE_DIR .. "/" .. BASE_FILE
 local BASE_URL = "https://raw.githubusercontent.com/site-u2023/aios/main/" .. BASE_FILE
 
--- ユーティリティ：コマンド実行 & 成功判定
+-- コマンド実行 & 成功判定（終了コード0で成功）
 local function run_cmd(cmd)
-    local ok = os.execute(cmd)
-    return ok == true or ok == 0
+    local _, _, code = os.execute(cmd)
+    return code == 0
 end
 
 -- ディレクトリ作成
@@ -57,7 +57,6 @@ local function main()
         io.stderr:write("実行権限の付与に失敗: " .. BASE_PATH .. "\n")
         os.exit(1)
     end
-    -- 引数を渡して実行
     exec_aios(arg)
 end
 
