@@ -5,38 +5,93 @@ local BASE_FILE = "aios.sh"
 local BASE_PATH = BASE_DIR .. "/" .. BASE_FILE
 local BASE_URL = "https://raw.githubusercontent.com/site-u2023/aios/main/" .. BASE_FILE
 
+-- Function to check if a file exists
 local function file_exists(path)
     local f = io.open(path, "r")
     if f then f:close() return true end
     return false
 end
 
+-- Function to execute a shell command and return status/code
 local function exec(cmd)
-    local ok, _, code = os.execute(cmd)
-    return ok, code
+    -- On OpenWrt/LuaJIT, os.execute might return boolean true/false on success/failure
+    -- or nil + error message + error code on failure depending on the command.
+    -- Let's handle the common cases.
+    local status, err, code = os.execute(cmd)
+    if status == true then return true, 0 end -- Explicit true means success (code 0)
+    if status == false then return false, 1 end -- Explicit false likely means code 1
+    if status == nil and type(code) == "number" then return false, code end -- nil status with code
+    return false, 1 -- Default failure
 end
 
+-- Create BASE_DIR if it doesn't exist
 if not file_exists(BASE_DIR) then
+    print("Creating directory: " .. BASE_DIR) -- Added info message
     local ok, code = exec("mkdir -p " .. BASE_DIR)
     if not ok then
-        io.stderr:write("Error: Failed to create " .. BASE_DIR .. "\n")
+        io.stderr:write("Error: Failed to create " .. BASE_DIR .. " (code: " .. tostring(code) .. ")\n")
         os.exit(1)
     end
 end
 
-local ok = false
-if os.execute("which wget > /dev/null 2>&1") == 0 then
-    ok = (os.execute("wget -q -O " .. BASE_PATH .. " " .. BASE_URL) == 0)
+-- Check if wget exists
+local wget_exists_ok, _ = exec("which wget > /dev/null 2>&1")
+if not wget_exists_ok then
+    io.stderr:write("Error: 'wget' command not found. Please install wget.\n")
+    os.exit(3) -- Use a different exit code for missing wget
 end
-if not ok then
-    io.stderr:write("Error: Failed to download " .. BASE_FILE .. "\n")
+
+-- --- Start Cache Busting Addition ---
+local timestamp = os.time()
+local final_remote_url = ""
+-- Check if the original BASE_URL already contains a query string (?)
+-- Use plain find (1 = start position, true = plain search)
+if string.find(BASE_URL, "?", 1, true) then
+    final_remote_url = BASE_URL .. "&_cb=" .. timestamp
+else
+    final_remote_url = BASE_URL .. "?_cb=" .. timestamp
+end
+print("Downloading " .. BASE_FILE .. " from: " .. final_remote_url) -- Info message with final URL
+-- --- End Cache Busting Addition ---
+
+-- Download the main script using the cache-busted URL
+-- Quote the URL in the shell command for safety
+local download_cmd = "wget --no-check-certificate -q -O '" .. BASE_PATH .. "' '" .. final_remote_url .. "'"
+local download_ok, download_code = exec(download_cmd)
+
+if not download_ok then
+    io.stderr:write("Error: Failed to download " .. BASE_FILE .. " from " .. final_remote_url .. " (code: " .. tostring(download_code) .. ")\n")
     os.exit(2)
 end
-os.execute("chmod +x " .. BASE_PATH)
 
-local args = ""
-for i = 1, #arg do
-    args = args .. " " .. string.gsub(arg[i], "'", "'\\''")
+-- Make the downloaded script executable
+local chmod_ok, chmod_code = exec("chmod +x '" .. BASE_PATH .. "'")
+if not chmod_ok then
+    -- Non-critical error, maybe just log it? Or exit? Let's log for now.
+    io.stderr:write("Warning: Failed to make " .. BASE_PATH .. " executable (code: " .. tostring(chmod_code) .. ").\n")
+    -- os.exit(4) -- Optionally exit on chmod failure
 end
-local code = os.execute(BASE_PATH .. args)
-os.exit(code == true and 0 or (type(code) == "number" and code or 1))
+
+-- Prepare arguments for the shell script, ensuring proper quoting
+local args_str = ""
+for i = 1, #arg do
+    -- Escape single quotes within each argument for the shell
+    local escaped_arg = string.gsub(arg[i], "'", "'\\''")
+    -- Enclose each argument in single quotes
+    args_str = args_str .. " '" .. escaped_arg .. "'"
+end
+
+-- Execute the downloaded script with arguments
+-- Note: os.execute returns different values based on success/failure/signal
+print("Executing: " .. BASE_PATH .. args_str) -- Info message
+local exec_status, exec_err, exec_code = os.execute(BASE_PATH .. args_str)
+
+-- Determine the exit code based on os.execute's return values
+local final_exit_code = 1 -- Default to 1 (error)
+if exec_status == true then
+    final_exit_code = 0 -- Success
+elseif type(exec_code) == "number" then
+    final_exit_code = exec_code -- Use the exit code returned by the script
+end
+
+os.exit(final_exit_code)
