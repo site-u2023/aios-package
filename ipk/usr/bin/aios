@@ -26,20 +26,18 @@ end
 
 local ok = false
 if os.execute("which wget > /dev/null 2>&1") == 0 then
-    ok = (os.execute("wget -q -O " .. BASE_PATH .. " " .. BASE_URL) == 0)
+    -- Add cache busting parameter using Unix timestamp and quote the URL
+    ok = (os.execute("wget -q -O " .. BASE_PATH .. " '" .. BASE_URL .. "?cache_bust=" .. os.time() .. "'") == 0)
 end
-
 if not ok then
     io.stderr:write("Error: Failed to download " .. BASE_FILE .. "\n")
     os.exit(2)
 end
-
 os.execute("chmod +x " .. BASE_PATH)
 
 local args = ""
 for i = 1, #arg do
     args = args .. " " .. string.gsub(arg[i], "'", "'\\''")
 end
-
 local code = os.execute(BASE_PATH .. args)
 os.exit(code == true and 0 or (type(code) == "number" and code or 1))
