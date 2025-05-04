@@ -1,0 +1,67 @@
+# Maintainer: site-u2023 <140032047+site-u2023@users.noreply.github.com> 
+# Contributor: site-u2023
+# pkgver is set dynamically in prepare() using git
+pkgrel=0
+pkgdesc="Advanced Internet Operating System scripts (local build, git version)"
+url="https://github.com/site-u2023/aios" # Informational URL
+arch="noarch"                             # Script is noarch
+license="MIT"                             # TODO: Verify license eventually
+depends=""                                # Runtime dependencies (as per user instruction: none)
+makedepends=""                            # Build dependencies (as per user instruction: none)
+
+source=()                                 # Use local directory content
+
+# Prepare function to determine version from git
+# NOTE: This function requires 'git' and 'bash' to be installed in the build environment.
+# If 'abuild' fails due to missing commands, 'makedepends="git bash"' might be needed.
+prepare() {
+	# Ensure we are in the source directory ($srcdir is where abuild copies files to)
+	cd "$srcdir" || exit 1
+
+	# Try to get version: latest tag (vX.Y.Z -> X.Y.Z) or commit count (0.0.N)
+	# Use bash subshell for robustness and cleaner error handling
+	_pkgver=$(bash -c '
+		_tag=$(git describe --tags --abbrev=0 2>/dev/null) && echo "$_tag" | sed "s/^v//" && exit 0
+		_count=$(git rev-list --count HEAD 2>/dev/null) && echo "0.0.$_count" && exit 0 # Format as 0.0.N if no tags
+		echo "0.0.0" # Ultimate fallback
+		' 2>/dev/null)
+
+	if [ -z "$_pkgver" ]; then
+		echo "Warning: Could not determine version from git. Falling back to 0.0.0" >&2
+		_pkgver="0.0.0"
+	fi
+
+	# Store the determined version in a temporary file for package()
+	echo "$_pkgver" > .pkgver
+	echo "Determined version: $_pkgver (saved to .pkgver)"
+}
+
+# No build() function needed for simple scripts
+
+# Package function to install files
+package() {
+	cd "$srcdir" || exit 1
+	local _version
+	if [ -f .pkgver ]; then
+		_version=$(cat .pkgver)
+	else
+		_version="unknown" # Fallback if .pkgver is missing
+	fi
+	echo "Packaging version: $_version"
+
+	# Install the main script to /usr/bin
+	install -D -m755 "$srcdir/aios" "$pkgdir/usr/bin/aios"
+
+	# Install other files if they exist in the source directory
+	# Example for common scripts/data:
+	# local sharedir="$pkgdir/usr/share/$pkgname"
+	# install -d "$sharedir"
+	# if [ -f "$srcdir/common-helper.sh" ]; then
+	#   install -D -m644 "$srcdir/common-helper.sh" "$sharedir/common-helper.sh"
+	# fi
+	# if [ -f "$srcdir/data.db" ]; then
+	#   install -D -m644 "$srcdir/data.db" "$sharedir/data.db"
+	# fi
+}
+
+# Checksums not needed for source=()
