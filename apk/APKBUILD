@@ -4,6 +4,9 @@
 pkgname=aios
 pkgver=0.1.0 # Set version manually (adjust as needed)
 pkgrel=0
+options="!check"
+options="!check"
+options="!check"
 pkgdesc="Advanced Internet Operating System scripts"
 url="https://github.com/site-u2023/aios"
 arch="noarch"
@@ -17,7 +20,7 @@ makedepends=""
 
 # Source: Fetch the main script directly from GitHub (main branch)
 # Using commit hash is recommended: source="aios::https://github.com/site-u2023/aios/raw/<commit_hash>/aios"
-source="aios::https://github.com/site-u2023/aios/raw/main/aios"
+source="aios"
 
 # No prepare() function needed
 
@@ -28,3 +31,6 @@ package() {
 install -D -m755 "$srcdir/aios" "$pkgdir/usr/bin/aios"
 }
 
+sha512sums="
+9b73924c5a87a9c12c41b84dbf7a18587ec1e3a2ea6becbe1c2fef0bc723c83250e5be44514329bf9d82182071609cb4a07623fd1d8fdae740312023fdec5709  aios
+"
