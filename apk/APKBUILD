@@ -7,7 +7,7 @@ url="https://github.com/site-u2023/aios-package"
 arch="all"
 license="MIT"
 depends=""
-source="aios"
+source="https://github.com/site-u2023/aios-package/raw/main/apk/aios"
 
 package() {
     install -Dm755 "$srcdir/aios" "$pkgdir/usr/bin/aios"
