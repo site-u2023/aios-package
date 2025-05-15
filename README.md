@@ -18,5 +18,5 @@ wget -O /tmp/aios_all.ipk "https://github.com/site-u2023/aios-package/releases/d
 
 “snapshot” build (apk)
 ```sh
-wget -O /tmp/aios_all.ipk "https://github.com/site-u2023/aios-package/releases/download/ipk0.0/aios.ipk"; opkg install /tmp/aios_all.ipk
+wget -O /tmp/aios_all.ipk "https://github.com/site-u2023/aios-package/releases/download/ipk0.1/aios.ipk"; opkg install /tmp/aios_all.ipk
 ```
