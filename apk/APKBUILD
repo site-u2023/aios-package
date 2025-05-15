@@ -1,36 +1,14 @@
-# Maintainer: site-u2023 <140032047+site-u2023@users.noreply.github.com>
-# Contributor: site-u2023
-
+# Maintainer: site-u2023
 pkgname=aios
-pkgver=0.1.0 # Set version manually (adjust as needed)
+pkgver=1.0
 pkgrel=0
-options="!check"
-options="!check"
-options="!check"
-pkgdesc="Advanced Internet Operating System scripts"
-url="https://github.com/site-u2023/aios"
-arch="noarch"
-license="CC0-1.0" # Based on aios script header
-
-# Runtime dependencies: wget is used by the script.
-depends="wget"
-
-# No build dependencies needed
-makedepends=""
-
-# Source: Fetch the main script directly from GitHub (main branch)
-# Using commit hash is recommended: source="aios::https://github.com/site-u2023/aios/raw/<commit_hash>/aios"
+pkgdesc="aios shell utility"
+url="https://github.com/site-u2023/aios-package"
+arch="all"
+license="MIT"
+depends=""
 source="aios"
 
-# No prepare() function needed
-
-# No build() function needed
-
-# Package function: Install only the main script
 package() {
-install -D -m755 "$srcdir/aios" "$pkgdir/usr/bin/aios"
+    install -Dm755 "$srcdir/aios" "$pkgdir/usr/bin/aios"
 }
-
-sha512sums="
-9b73924c5a87a9c12c41b84dbf7a18587ec1e3a2ea6becbe1c2fef0bc723c83250e5be44514329bf9d82182071609cb4a07623fd1d8fdae740312023fdec5709  aios
-"
