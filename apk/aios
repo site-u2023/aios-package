@@ -22,7 +22,7 @@ fi
 # Check if wget command is available in PATH
 if command -v wget >/dev/null 2>&1; then
     # Get current Unix timestamp for cache busting
-    cache_buster=$(date +%s)
+    # cache_buster=$(date +%s)
     # Construct the full download URL
     download_url="$BASE_URL?cache_bust=$cache_buster"
 
