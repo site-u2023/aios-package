@@ -2,7 +2,7 @@
 pkgname=aios
 pkgver=1.0
 pkgrel=0
-pkgdesc="aios-package is an package specifically for OpenWrt. By installing this package, the "aios.sh" shell script will be installed and ready to use on your OpenWrt system."
+pkgdesc="aios-package is an package specifically for OpenWrt. By installing this package, the aios.sh shell script will be installed and ready to use on your OpenWrt system."
 url="https://github.com/site-u2023/aios-package"
 arch="all"
 license="MIT"
